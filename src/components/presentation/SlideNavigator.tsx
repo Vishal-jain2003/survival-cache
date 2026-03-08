@@ -1,103 +1,114 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CinematicCanvas } from "./CinematicCanvas";
-import { Slide01Title } from "./slides/Slide01Title";
-import { Slide02Agenda } from "./slides/Slide02Agenda";
-import { Slide03ScaleIntro } from "./slides/Slide03ScaleIntro";
-import { Slide04Netflix } from "./slides/Slide04Netflix";
-import { Slide05Instagram } from "./slides/Slide05Instagram";
-import { Slide06WhyCache } from "./slides/Slide06WhyCache";
-import { Slide07MentalModel } from "./slides/Slide07MentalModel";
-import { Slide08TypesOfCaching } from "./slides/Slide08Types";
-import { Slide09L1L2 } from "./slides/Slide09L1L2";
-import { Slide10Distributed } from "./slides/Slide10Distributed";
-import { Slide11ChallengesA } from "./slides/Slide11ChallengesA";
-import { Slide12ChallengesB } from "./slides/Slide12ChallengesB";
-import { Slide13Architecture } from "./slides/Slide13Architecture";
-import { Slide14Lessons } from "./slides/Slide14Lessons";
-import { Slide15Results } from "./slides/Slide15Results";
-import { Slide16Closing } from "./slides/Slide16Closing";
+
+// ── Section imports ────────────────────────────────────────────────────
+import { Section01ColdOpen }     from "./sections/Section01ColdOpen";
+import { Section02ScaleShock }   from "./sections/Section02ScaleShock";
+import { Section03WhyBreaks }    from "./sections/Section03WhyBreaks";
+import { Section04Netflix }      from "./sections/Section04Netflix";
+import { Section05Viral }        from "./sections/Section05Viral";
+import { Section06MentalModel }  from "./sections/Section06MentalModel";
+import { Section07TypesOfCaching } from "./sections/Section07TypesOfCaching";
+import { Section08EdgeFabric }   from "./sections/Section08EdgeFabric";
+import { Section09Architecture } from "./sections/Section09Architecture";
+import { Section10HashRing }     from "./sections/Section10HashRing";
+import { Section11Gossip }       from "./sections/Section11Gossip";
+import { Section12WAL }          from "./sections/Section12WAL";
+import { Section13Consistency }  from "./sections/Section13Consistency";
+import { Section14Challenges }   from "./sections/Section14Challenges";
+import { Section15MCP }          from "./sections/Section15MCP";
+import { Section16Observability } from "./sections/Section16Observability";
+import { Section17Closing }      from "./sections/Section17Closing";
 
 const SECTIONS = [
-  { label: "TITLE", section: "00" },
-  { label: "AGENDA", section: "00" },
-  { label: "SCALE", section: "01" },
-  { label: "SCALE", section: "01" },
-  { label: "SCALE", section: "01" },
-  { label: "WHY CACHE", section: "02" },
-  { label: "HOW IT WORKS", section: "03" },
-  { label: "TYPES", section: "03" },
-  { label: "LAYERING", section: "03" },
-  { label: "DISTRIBUTED", section: "04" },
-  { label: "CHALLENGES", section: "04" },
-  { label: "CHALLENGES", section: "04" },
-  { label: "ARCHITECTURE", section: "05" },
-  { label: "LESSONS", section: "05" },
-  { label: "RESULTS", section: "05" },
-  { label: "CLOSING", section: "06" },
+  { label: "COLD OPEN",     code: "01" },
+  { label: "SCALE SHOCK",   code: "02" },
+  { label: "WHY IT BREAKS", code: "03" },
+  { label: "NETFLIX",       code: "04" },
+  { label: "VIRAL SPIKE",   code: "05" },
+  { label: "MENTAL MODEL",  code: "06" },
+  { label: "TYPES",         code: "07" },
+  { label: "EDGEFABRIC",    code: "08" },
+  { label: "ARCHITECTURE",  code: "09" },
+  { label: "HASH RING",     code: "10" },
+  { label: "GOSSIP/SWIM",   code: "11" },
+  { label: "WAL",           code: "12" },
+  { label: "CONSISTENCY",   code: "13" },
+  { label: "CHALLENGES",    code: "14" },
+  { label: "AGENTIC / MCP", code: "15" },
+  { label: "OBSERVABILITY", code: "16" },
+  { label: "CLOSING",       code: "17" },
 ];
 
-const SLIDES = [
-  Slide01Title,
-  Slide02Agenda,
-  Slide03ScaleIntro,
-  Slide04Netflix,
-  Slide05Instagram,
-  Slide06WhyCache,
-  Slide07MentalModel,
-  Slide08TypesOfCaching,
-  Slide09L1L2,
-  Slide10Distributed,
-  Slide11ChallengesA,
-  Slide12ChallengesB,
-  Slide13Architecture,
-  Slide14Lessons,
-  Slide15Results,
-  Slide16Closing,
+const COMPONENTS = [
+  Section01ColdOpen,
+  Section02ScaleShock,
+  Section03WhyBreaks,
+  Section04Netflix,
+  Section05Viral,
+  Section06MentalModel,
+  Section07TypesOfCaching,
+  Section08EdgeFabric,
+  Section09Architecture,
+  Section10HashRing,
+  Section11Gossip,
+  Section12WAL,
+  Section13Consistency,
+  Section14Challenges,
+  Section15MCP,
+  Section16Observability,
+  Section17Closing,
 ];
 
-const TOTAL = SLIDES.length;
+const TOTAL = COMPONENTS.length;
 
 const slideVariants = {
   enter: (dir: number) => ({
-    scale: 0.88,
+    scale: 0.9,
     opacity: 0,
-    x: dir > 0 ? 80 : -80,
+    x: dir > 0 ? 100 : -100,
   }),
-  center: {
-    scale: 1,
-    opacity: 1,
-    x: 0,
-  },
+  center: { scale: 1, opacity: 1, x: 0 },
   exit: (dir: number) => ({
-    scale: 0.88,
+    scale: 0.9,
     opacity: 0,
-    x: dir > 0 ? -80 : 80,
+    x: dir > 0 ? -100 : 100,
   }),
 };
 
 export function SlideNavigator() {
-  const [current, setCurrent] = useState(0);
+  const [current, setCurrent]   = useState(0);
   const [direction, setDirection] = useState(1);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [showHint, setShowHint] = useState(true);
   const touchStart = useRef<number | null>(null);
+  const isAnimating = useRef(false);
 
   const navigate = useCallback((dir: number) => {
+    if (isAnimating.current) return;
+    isAnimating.current = true;
     setDirection(dir);
     setCurrent(prev => Math.max(0, Math.min(TOTAL - 1, prev + dir)));
+    setTimeout(() => { isAnimating.current = false; }, 500);
   }, []);
 
-  // Keyboard navigation
+  const goTo = useCallback((idx: number) => {
+    if (isAnimating.current || idx === current) return;
+    isAnimating.current = true;
+    setDirection(idx > current ? 1 : -1);
+    setCurrent(idx);
+    setTimeout(() => { isAnimating.current = false; }, 500);
+  }, [current]);
+
+  // Keyboard
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") navigate(1);
-      if (e.key === "ArrowLeft" || e.key === "ArrowUp") navigate(-1);
+      if (e.key === "ArrowRight" || e.key === "ArrowDown")  navigate(1);
+      if (e.key === "ArrowLeft"  || e.key === "ArrowUp")    navigate(-1);
       if (e.key === "f" || e.key === "F") {
-        if (!document.fullscreenElement) {
-          document.documentElement.requestFullscreen?.();
-        } else {
-          document.exitFullscreen?.();
-        }
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+        else document.exitFullscreen?.();
       }
     };
     window.addEventListener("keydown", handler);
@@ -106,28 +117,23 @@ export function SlideNavigator() {
 
   // Touch swipe
   useEffect(() => {
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStart.current = e.touches[0].clientX;
-    };
-    const handleTouchEnd = (e: TouchEvent) => {
+    const onStart = (e: TouchEvent) => { touchStart.current = e.touches[0].clientX; };
+    const onEnd   = (e: TouchEvent) => {
       if (touchStart.current === null) return;
       const diff = touchStart.current - e.changedTouches[0].clientX;
       if (Math.abs(diff) > 50) navigate(diff > 0 ? 1 : -1);
       touchStart.current = null;
     };
-    window.addEventListener("touchstart", handleTouchStart);
-    window.addEventListener("touchend", handleTouchEnd);
-    return () => {
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchend", handleTouchEnd);
-    };
+    window.addEventListener("touchstart", onStart);
+    window.addEventListener("touchend", onEnd);
+    return () => { window.removeEventListener("touchstart", onStart); window.removeEventListener("touchend", onEnd); };
   }, [navigate]);
 
   // Mouse parallax
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       setMousePos({
-        x: (e.clientX / window.innerWidth - 0.5) * 2,
+        x: (e.clientX / window.innerWidth  - 0.5) * 2,
         y: (e.clientY / window.innerHeight - 0.5) * 2,
       });
     };
@@ -135,34 +141,56 @@ export function SlideNavigator() {
     return () => window.removeEventListener("mousemove", handler);
   }, []);
 
-  const SlideComponent = SLIDES[current];
+  // Auto-hide hint
+  useEffect(() => {
+    const t = setTimeout(() => setShowHint(false), 5000);
+    return () => clearTimeout(t);
+  }, []);
+
+  const SectionComponent = COMPONENTS[current];
   const section = SECTIONS[current];
+  const progress = ((current) / (TOTAL - 1)) * 100;
 
   return (
-    <div className="w-full h-screen overflow-hidden relative" style={{ background: "#0A0E1A" }}>
-      {/* 3D Canvas Background */}
-      <CinematicCanvas slideIndex={current} mousePos={mousePos} />
+    <div className="w-full h-screen overflow-hidden relative" style={{ background: "var(--ef-bg)" }}>
+      {/* 3D Canvas */}
+      <CinematicCanvas sectionIndex={current} mousePos={mousePos} />
 
-      {/* Section label */}
+      {/* Progress bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 h-[2px] bg-ef-border">
+        <motion.div
+          className="h-full"
+          style={{ background: "var(--ef-cyan)", boxShadow: "0 0 8px rgba(0,212,255,0.8)" }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        />
+      </div>
+
+      {/* Section indicator */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={`section-${current}`}
-          initial={{ opacity: 0, y: -10 }}
+          key={`sec-${current}`}
+          initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.4 }}
-          className="absolute top-6 left-8 z-20 flex items-center gap-3"
+          transition={{ duration: 0.3 }}
+          className="fixed top-4 left-6 z-40 flex items-center gap-3"
         >
-          <span className="font-mono-custom text-xs text-muted-foreground uppercase tracking-widest">
-            {section.section} / {section.label}
+          <span className="font-section text-xs" style={{ color: "var(--ef-cyan)" }}>
+            {section.code}
           </span>
-          <span className="font-mono-custom text-xs text-cyan">
-            {String(current + 1).padStart(2, "0")}/{TOTAL}
+          <span className="font-section text-xs tracking-widest uppercase" style={{ color: "var(--ef-gray)" }}>
+            / {section.label}
           </span>
         </motion.div>
       </AnimatePresence>
 
-      {/* Slide content */}
+      {/* Slide count */}
+      <div className="fixed top-4 right-6 z-40 font-section text-xs" style={{ color: "var(--ef-gray)" }}>
+        {String(current + 1).padStart(2, "0")} / {String(TOTAL).padStart(2, "0")}
+      </div>
+
+      {/* Section content */}
       <AnimatePresence mode="wait" custom={direction}>
         <motion.div
           key={current}
@@ -174,17 +202,17 @@ export function SlideNavigator() {
           transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
           className="absolute inset-0 z-10"
         >
-          <SlideComponent />
+          <SectionComponent active={true} />
         </motion.div>
       </AnimatePresence>
 
-      {/* Navigation arrows */}
+      {/* Nav arrows */}
       {current > 0 && (
         <button
           onClick={() => navigate(-1)}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-cyan transition-colors"
-          style={{ background: "rgba(17,24,39,0.8)", border: "1px solid #1E2D40" }}
-          aria-label="Previous slide"
+          className="fixed left-3 top-1/2 -translate-y-1/2 z-40 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110"
+          style={{ background: "rgba(17,24,39,0.9)", border: "1px solid var(--ef-border)", color: "var(--ef-gray)" }}
+          aria-label="Previous"
         >
           ←
         </button>
@@ -192,44 +220,46 @@ export function SlideNavigator() {
       {current < TOTAL - 1 && (
         <button
           onClick={() => navigate(1)}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-cyan transition-colors"
-          style={{ background: "rgba(17,24,39,0.8)", border: "1px solid #1E2D40" }}
-          aria-label="Next slide"
+          className="fixed right-3 top-1/2 -translate-y-1/2 z-40 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110"
+          style={{ background: "rgba(17,24,39,0.9)", border: "1px solid var(--ef-border)", color: "var(--ef-gray)" }}
+          aria-label="Next"
         >
           →
         </button>
       )}
 
-      {/* Dot progress indicator */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
-        {SLIDES.map((_, i) => (
+      {/* Dot progress */}
+      <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5">
+        {SECTIONS.map((_, i) => (
           <button
             key={i}
-            onClick={() => {
-              setDirection(i > current ? 1 : -1);
-              setCurrent(i);
-            }}
+            onClick={() => goTo(i)}
             className="transition-all duration-300 rounded-full"
             style={{
-              width: i === current ? 20 : 6,
-              height: 6,
-              background: i === current ? "#00D4FF" : "#1E2D40",
-              boxShadow: i === current ? "0 0 8px rgba(0,212,255,0.6)" : "none",
+              width:      i === current ? 18 : 5,
+              height:     5,
+              background: i === current ? "var(--ef-cyan)" : "var(--ef-border)",
+              boxShadow:  i === current ? "0 0 8px rgba(0,212,255,0.6)" : "none",
             }}
-            aria-label={`Go to slide ${i + 1}`}
+            aria-label={`Section ${i + 1}`}
           />
         ))}
       </div>
 
       {/* Keyboard hint */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        className="absolute bottom-6 right-6 z-20 text-xs text-muted-foreground font-mono-custom hidden md:block"
-      >
-        ← → navigate &nbsp;|&nbsp; F fullscreen
-      </motion.div>
+      <AnimatePresence>
+        {showHint && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed bottom-5 right-5 z-40 font-section text-xs hidden md:block"
+            style={{ color: "var(--ef-gray)" }}
+          >
+            ← → navigate &nbsp;|&nbsp; F fullscreen
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
